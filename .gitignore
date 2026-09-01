@@ -1,0 +1,16 @@
+# Python virtual environment
+venv/
+ENV/
+env/
+
+# Python bytecode cache files
+__pycache__/
+*.py[cod]
+
+# IDE settings
+.vscode/
+.idea/
+
+# Results generated during testing
+results/*.csv
+results/*.png
