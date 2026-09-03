@@ -1,35 +1,40 @@
+"""
+Shortest Path Finding in a Maze - Streamlit Application
+Phase 1: Environment & Project Verification
+"""
+
 import sys
-import tkinter as tk
+import streamlit as st
 
-def verify_environment():
-    print(" SHORTEST PATH FINDING IN A MAZE - INITIALIZATION")
-    print(f"python version : {sys.version.split()[0]}")   #print the interpreter version
+# Configure browser window tab
+st.set_page_config(
+    page_title="Shortest Path Finder - Maze Project",
+    page_icon="🧩",
+    layout="wide"
+)
 
-    # check tkinter availability 
+def main():
+    st.title("🧩 Shortest Path Finding in a Maze")
+    st.caption("A Comparative Analysis of BFS, Dijkstra's, A*, and Bellman-Ford Algorithms")
+    
+    st.divider()
+    
+    st.subheader("Phase 1: System Environment Status")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.info(f"**Python Version:** {sys.version.split()[0]}")
+        st.success("**Streamlit Status:** Functional & Running")
+        
+    with col2:
+        try:
+            import matplotlib
+            import pandas
+            st.success(f"**Matplotlib Version:** {matplotlib.__version__}")
+            st.success(f"**Pandas Version:** {pandas.__version__}")
+        except ImportError as e:
+            st.error(f"Missing dependency: {e}")
 
-    try:
-        root=tk.Tk() # creates the main Tkinter application window.
-        root.withdraw() # We don't actually want a blank window appearing on the screen.
-        print("Tkinter status : Functional")
-        root.destroy()
-    except Exception as e:
-        print(f"Tkinter Status : Failed {e}")
-        return False
-
-    # check matplotlib availability
-
-    try:
-        import matplotlib
-        print(f"Matplotlib      : Installed (v{matplotlib.__version__})")
-    except ImportError:
-        print("Matplotlib      : Not Found (Install via requirements.txt)")
-        return False
-
-    print("-" * 60)
-    print("Environment setup verified successfully.")
-    return True
-
-if __name__ == "__main__":     # __name__ is a built-in variable that Python automatically assigns to every script/module when it runs.
-    success = verify_environment()
-    if not success:
-        sys.exit(1)
+if __name__ == "__main__":
+    main()
