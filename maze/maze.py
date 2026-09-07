@@ -1,74 +1,73 @@
 """
-Mmaze Representation and Grid Graph Data Structure
-
+Maze Data Structure & Recursive Backtracking Maze Generator
 """
 
+import random
+
 class CellType:
-    """Cell status codes for grid elements."""
     EMPTY = 0
     WALL = 1
 
 class Maze:
-    """
-    Represents a 2D grid maze and provides graph neighbor lookup functionalities.
-    """
-    def __init__(self, rows=10, cols=10):
+    def __init__(self, rows=11, cols=11):
         self.rows = rows
         self.cols = cols
-        
-        # Grid stores cell types: 0 for empty, 1 for wall
         self.grid = [[CellType.EMPTY for _ in range(cols)] for _ in range(rows)]
-        
-        # Costs grid: default cost is 1 for open cells
         self.costs = [[1 for _ in range(cols)] for _ in range(rows)]
-        
-        # Start and End positions as (row, col) tuples
         self.start = (0, 0)
         self.end = (rows - 1, cols - 1)
 
-    def set_wall(self, row, col):
-        """Sets a cell as a wall if it is not start or end."""
-        if (row, col) != self.start and (row, col) != self.end:
-            self.grid[row][col] = CellType.WALL
-
-    def remove_wall(self, row, col):
-        """Clears a wall, making it an empty cell."""
-        self.grid[row][col] = CellType.EMPTY
-
-    def set_cell_cost(self, row, col, cost):
-        """Assigns a movement cost to a specific cell."""
-        if cost > 0:
-            self.costs[row][col] = cost
-
-    def is_valid(self, row, col):
-        """Checks if a cell coordinate is within grid bounds and not a wall."""
-        is_in_bounds = 0 <= row < self.rows and 0 <= col < self.cols
-        if not is_in_bounds:
-            return False
-        return self.grid[row][col] != CellType.WALL
-
-    def get_neighbors(self, node):
-        """
-        Returns valid adjacent 4-directional neighbors (UP, DOWN, LEFT, RIGHT)
-        along with their step movement costs.
+    def generate_random_maze(self):
+        """Generates a classic maze using Recursive Backtracking (DFS)."""
+        # Fill everything with walls initially
+        self.grid = [[CellType.WALL for _ in range(self.cols)] for _ in range(self.rows)]
+        self.costs = [[1 for _ in range(self.cols)] for _ in range(self.rows)]
         
-        Returns:
-            list of tuples: [((neighbor_row, neighbor_col), edge_cost), ...]
+        # Start carving paths from (0,0)
+        stack = [(0, 0)]
+        self.grid[0][0] = CellType.EMPTY
+        visited = {(0, 0)}
+
+        while stack:
+            r, c = stack[-1]
+            neighbors = []
+
+            # Check moves 2 steps away to leave wall borders
+            for dr, dc in [(-2, 0), (2, 0), (0, -2), (0, 2)]:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < self.rows and 0 <= nc < self.cols and (nr, nc) not in visited:
+                    neighbors.append((nr, nc, r + dr // 2, c + dc // 2))
+
+            if neighbors:
+                # Pick a random neighbor and carve a passage through the wall
+                next_r, next_c, wall_r, wall_c = random.choice(neighbors)
+                self.grid[wall_r][wall_c] = CellType.EMPTY
+                self.grid[next_r][next_c] = CellType.EMPTY
+                visited.add((next_r, next_c))
+                stack.append((next_r, next_c))
+            else:
+                stack.pop()
+
+        # Ensure Start and End coordinates are open passages
+        self.start = (0, 0)
+        self.end = (self.rows - 1, self.cols - 1)
+        self.grid[self.start[0]][self.start[1]] = CellType.EMPTY
+        self.grid[self.end[0]][self.end[1]] = CellType.EMPTY
+
+    def get_neighbors(self, pos):
         """
-        r, c = node
-        # 4-Directional movements: Up, Down, Left, Right
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        Returns valid adjacent moves (Up, Down, Left, Right) from position pos (r, c)
+        along with edge costs.
+        """
+        r, c = pos
         neighbors = []
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
 
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
-            if self.is_valid(nr, nc):
-                edge_cost = self.costs[nr][nc]
-                neighbors.append(((nr, nc), edge_cost))
+            if 0 <= nr < self.rows and 0 <= nc < self.cols:
+                if self.grid[nr][nc] != CellType.WALL:
+                    cost = self.costs[nr][nc]
+                    neighbors.append(((nr, nc), cost))
 
         return neighbors
-
-    def reset_grid(self):
-        """Resets walls and cell costs back to default empty grid."""
-        self.grid = [[CellType.EMPTY for _ in range(self.cols)] for _ in range(self.rows)]
-        self.costs = [[1 for _ in range(self.cols)] for _ in range(self.rows)]
