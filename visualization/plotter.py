@@ -1,64 +1,77 @@
 """
-Matplotlib High-Contrast Maze Renderer
-Renders thin vector walls, crisp pathways, and start/end arrows.
+Matplotlib Visualizer with Explored Node Footprints
 """
 
 import matplotlib.pyplot as plt
 
-def plot_maze(maze, path=None):
-    """
-    Renders the grid with thin black vector walls on a clean white canvas.
-    """
+ALGO_COLORS = {
+    "BFS": "#00E5FF",           # Cyan
+    "Dijkstra's": "#FFD600",    # Bright Yellow
+    "A*": "#FF2A6D",            # Neon Pink
+    "Bellman-Ford": "#00FF66"   # Neon Green
+}
+
+def plot_maze(maze, benchmark_data=None):
+    """Renders vector walls, explored search footprints, and solution paths."""
     fig, ax = plt.subplots(figsize=(6, 6), facecolor="white")
     ax.set_facecolor("white")
 
-    # Set grid limits based on dimensions
     rows, cols = maze.rows, maze.cols
     ax.set_xlim(-0.5, cols - 0.5)
-    ax.set_ylim(rows - 0.5, -0.5)  # Invert Y to match grid (0,0 at top-left)
+    ax.set_ylim(rows - 0.5, -0.5)
 
-    # 1. Draw Outer Bounding Walls
-    ax.plot([-0.5, cols - 0.5], [-0.5, -0.5], color="black", linewidth=3.5)  # Top
-    ax.plot([-0.5, cols - 0.5], [rows - 0.5, rows - 0.5], color="black", linewidth=3.5)  # Bottom
-    ax.plot([-0.5, -0.5], [-0.5, rows - 0.5], color="black", linewidth=3.5)  # Left
-    ax.plot([cols - 0.5, cols - 0.5], [-0.5, rows - 0.5], color="black", linewidth=3.5)  # Right
+    # 1. Outer Bounding Walls
+    ax.plot([-0.5, cols - 0.5], [-0.5, -0.5], color="black", linewidth=3.5)
+    ax.plot([-0.5, cols - 0.5], [rows - 0.5, rows - 0.5], color="black", linewidth=3.5)
+    ax.plot([-0.5, -0.5], [-0.5, rows - 0.5], color="black", linewidth=3.5)
+    ax.plot([cols - 0.5, cols - 0.5], [-0.5, rows - 0.5], color="black", linewidth=3.5)
 
-    # 2. Draw Internal Wall Cells as Crisp Line Segments
+    # 2. Draw Internal Wall Cells
     for r in range(rows):
         for c in range(cols):
-            if maze.grid[r][c] == 1:  # Wall cell
-                # Draw square boundary around the wall cell
+            if maze.grid[r][c] == 1:
                 ax.fill(
                     [c - 0.5, c + 0.5, c + 0.5, c - 0.5],
                     [r - 0.5, r - 0.5, r + 0.5, r + 0.5],
                     color="black"
                 )
 
-    # 3. Plot Solution Path
-    if path:
-        path_c = [p[1] for p in path]
-        path_r = [p[0] for p in path]
-        ax.plot(path_c, path_r, color="#FF2A6D", linewidth=3.5, linestyle="-", zorder=4)
+    # 3. Render Search Footprints & Overlapping Paths
+    if benchmark_data:
+        for idx, res in enumerate(benchmark_data):
+            algo_name = res["algorithm"]
+            path = res["path"]
+            color = ALGO_COLORS.get(algo_name, "#FF2A6D")
 
-    # 4. Draw Red Entry/Exit Directional Arrows
+            # Offset paths slightly so overlapping routes remain distinguishable
+            offset = (idx - len(benchmark_data) / 2) * 0.12
+            path_c = [p[1] + offset for p in path]
+            path_r = [p[0] + offset for p in path]
+
+            ax.plot(
+                path_c, path_r, 
+                color=color, 
+                linewidth=3.0, 
+                alpha=0.9, 
+                label=algo_name, 
+                zorder=5 + idx
+            )
+
+    # 4. Entry and Exit Arrows
     start_r, start_c = maze.start
     end_r, end_c = maze.end
 
-    # Start Arrow (Pointing Right into Start)
     ax.annotate(
         "", xy=(start_c, start_r), xytext=(start_c - 0.8, start_r),
         arrowprops=dict(arrowstyle="->", color="#FF0000", lw=3, mutation_scale=20),
-        zorder=5
+        zorder=10
     )
-    # End Arrow (Pointing Right out of End)
     ax.annotate(
         "", xy=(end_c + 0.8, end_r), xytext=(end_c, end_r),
         arrowprops=dict(arrowstyle="->", color="#FF0000", lw=3, mutation_scale=20),
-        zorder=5
+        zorder=10
     )
 
-    # Remove axes ticks and borders for clean presentation output
     ax.axis("off")
     plt.tight_layout()
-    
     return fig
