@@ -5,14 +5,14 @@ from algorithms.dijkstra import solve_dijkstra
 from algorithms.astar import solve_astar
 from algorithms.bellman_ford import solve_bellman_ford
 from visualization.plotter import plot_maze
-from ui.components import inject_custom_css, render_legend, render_benchmarks
+from ui.components import inject_custom_css, render_gaming_title, render_legend, render_benchmarks
 
-st.set_page_config(page_title="Wayfinder", page_icon="🧩", layout="wide")
+st.set_page_config(page_title="Wayfinder", page_icon="⚡", layout="wide")
 inject_custom_css()
 
 def main():
-    st.title("Wayfinder")
-    st.caption("Interactive Pathfinding & Maze Visualizer")
+    # Gaming Title Header
+    render_gaming_title()
     st.divider()
 
     col_controls, col_maze, col_metrics = st.columns([1, 2, 1])
@@ -20,7 +20,7 @@ def main():
     if "benchmark_data" not in st.session_state:
         st.session_state.benchmark_data = None
 
-    # PANEL 1: CONTROLS
+    # --- PANEL 1: CONTROLS ---
     with col_controls:
         st.subheader("CONTROLS")
         maze_size = st.selectbox("Maze Size", ["11x11", "21x21", "31x31"], index=2, key="sb_maze_size")
@@ -33,8 +33,8 @@ def main():
         use_bellman = st.checkbox("Bellman-Ford", value=False, key="chk_bellman")
 
         st.write("")
-        btn_generate = st.button("🎲 Generate Multi-Path Maze", use_container_width=True, key="btn_gen")
-        btn_run = st.button("▶ Run Comparison", type="primary", use_container_width=True, key="btn_run")
+        btn_generate = st.button("🎲 GENERATE MULTI-PATH MAZE", use_container_width=True, key="btn_gen")
+        btn_run = st.button("▶ RUN COMPARISON", type="primary", use_container_width=True, key="btn_run")
 
     if "maze" not in st.session_state or st.session_state.maze.rows != size:
         st.session_state.maze = Maze(rows=size, cols=size)
@@ -57,22 +57,22 @@ def main():
 
     benchmark_data = st.session_state.benchmark_data
 
-    # PANEL 2: MAZE VIEW
+    # --- PANEL 2: MAZE VIEW ---
     with col_maze:
-        st.subheader("MAZE VIEW")
-        st.info(f"Grid Canvas: {maze.rows} × {maze.cols}")
+        st.subheader("GRID CANVAS")
+        st.info(f"GRID RESOLUTION: {maze.rows} × {maze.cols}")
         if benchmark_data:
             render_legend(benchmark_data)
         fig_maze = plot_maze(maze, benchmark_data=benchmark_data)
         st.pyplot(fig_maze, use_container_width=True)
 
-    # PANEL 3: BENCHMARKS
+    # --- PANEL 3: BENCHMARKS ---
     with col_metrics:
-        st.subheader("BENCHMARKS")
+        st.subheader("LIVE BENCHMARKS")
         if benchmark_data:
             render_benchmarks(benchmark_data)
         else:
-            st.write("Select algorithms and click **▶ Run Comparison** to evaluate benchmarks.")
+            st.write("Select algorithms and click **▶ RUN COMPARISON** to start benchmarking.")
 
 if __name__ == "__main__":
-    main() 
+    main()
